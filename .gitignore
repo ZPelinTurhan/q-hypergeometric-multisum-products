@@ -4,3 +4,4 @@ results/
 *.csv
 *.json
 *.txt
+!requirements.txt
