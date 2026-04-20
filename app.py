@@ -143,7 +143,7 @@ def index():
 @app.route("/download/<result_id>/<filetype>")
 def download(result_id, filetype):
 
-    if filetype not in ("txt", "csv", "json", "xlsx"):
+    if filetype not in ("txt", "csv", "json"):
         return "Invalid file type", 400
 
     try:
