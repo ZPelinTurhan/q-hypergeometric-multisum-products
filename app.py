@@ -22,7 +22,7 @@ RESULTS_DIR = os.path.join(tempfile.gettempdir(), "ens492_results")
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
 # how long to keep result files before cleanup (seconds)
-RESULT_TTL = 300
+RESULT_TTL = 3600
 
 def cleanup_old_files():
     # remove result files older than RESULT_TTL
