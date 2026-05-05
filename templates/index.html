@@ -11,19 +11,31 @@
             }
 
             .parameters {
-                width: 260px;
-                margin-top: 80px;
-                margin-left: 150px;
-                font-size: 125%;
-                line-height: 1.8;
+                display: flex;
+                gap: 40px;
+                margin-top: 40px;
+                margin-left: 50px;
+            }
+
+            .param-col {
                 display: grid;
-                grid-template-columns: 40px 1fr;
-                column-gap: 10px;
-                row-gap: 10px;
+                grid-template-columns: auto 80px;
+                column-gap: 8px;
+                row-gap: 12px;
+                font-size: 125%;
+                line-height: 1.2;
+            }
+
+            .param-col label {
+                text-align: right;
+                white-space: nowrap;
             }
 
             input {
-                width: 100px;
+                width: 70px;
+                height: 28px;
+                padding: 2px 6px;
+                font-size: 14px;
             }
 
             button {
@@ -33,7 +45,7 @@
             }
 
             .compute-button {
-                margin-left: 200px;
+                margin-left: 300px;
             }
 
             .container {
@@ -42,10 +54,11 @@
                 margin-left: 40px;
                 margin-top: 30px;
                 margin-right: 50px;
+                align-items: flex-start;
             }
 
             .results {
-                margin-top: 60px;
+                margin-top: 40px;
             }
 
             .download-button {
@@ -70,62 +83,100 @@
     <body style="background-color: rgb(213, 216, 219);">
 
         <h1 style="
-            width:600px;
-            margin:40px auto;
+            margin:40px 0;
             color:rgb(165, 53, 53);
             font-size:150%;
             text-align:center;
         ">
             \[
-            \sum_{m,n \ge 0}
-            \frac{q^{A m(m+1)/2 + Bmn + C n(n+1)/2 + Dm + En + F}}
-            {(q^k;q^k)_m (q^L;q^L)_n}
+            \sum_{m,n,r \ge 0}
+            \frac{q^{A m(m+1)/2 + B n(n+1)/2 + C r(r+1)/2
+            + Dmn + Emr + Fnr
+            + Gm + Hn + Ir + J}}
+            {(q^k;q^k)_m (q^L;q^L)_n (q^M;q^M)_r}
             \]
         </h1>
 
-        <div class="container">
+        {% if error %}
+        <p style="color:crimson; text-align:center; font-weight:bold; margin: 20px auto; width: 80%;">
+            {{ error }}
+        </p>
+        {% endif %}
 
+        <div class="container">
             <form method="POST">
                 <div class="parameters">
-
-                    <label>A =</label> <input type="number" name="A" required>
-                    <label>B =</label> <input type="number" name="B" required>
-                    <label>C =</label> <input type="number" name="C" required>
-                    <label>D =</label> <input type="number" name="D" required>
-                    <label>E =</label> <input type="number" name="E" required>
-                    <label>F =</label> <input type="number" name="F" required>
-                    <label>k =</label> <input type="number" name="k" required>
-                    <label>L =</label> <input type="number" name="L" required>
-                    <label>S =</label> <input type="number" name="S" required>
-
+                    <div class="param-col">
+                        <label>A =</label> <input type="number" name="A" required>
+                        <label>B =</label> <input type="number" name="B" required>
+                        <label>C =</label> <input type="number" name="C" required>
+                        <label>D_min =</label> <input type="number" name="D_min" required>
+                        <label>D_max (optional) =</label> <input type="number" name="D_max">
+                        <label>E_min =</label> <input type="number" name="E_min" required>
+                        <label>E_max (optional) =</label> <input type="number" name="E_max">
+                        <label>F =</label> <input type="number" name="F" required>
+                    </div>
+                    <div class="param-col">
+                        <label>G =</label> <input type="number" name="G" required>
+                        <label>H =</label> <input type="number" name="H" required>
+                        <label>I =</label> <input type="number" name="I" required>
+                        <label>J =</label> <input type="number" name="J" required>
+                        <label>k =</label> <input type="number" name="k" required>
+                        <label>L =</label> <input type="number" name="L" required>
+                        <label>M =</label> <input type="number" name="M" required>
+                        <label>S =</label> <input type="number" name="S" required>
+                    </div>
                 </div>
 
                 <button class="compute-button" type="submit">Compute</button>
             </form>
 
-            {% if sum_coeffs is not none %}
+            {% if all_results %}
             <div class="results">
+
+                <h3>Parameters Used</h3>
+                <p>
+                    A={{ params.get('A') }},
+                    B={{ params.get('B') }},
+                    C={{ params.get('C') }},
+                    D_range=[{{ params.get('D_min') }}, {{ params.get('D_max') or params.get('D_min') }}],
+                    E_range=[{{ params.get('E_min') }}, {{ params.get('E_max') or params.get('E_min') }}],
+                    F={{ params.get('F') }},
+                    G={{ params.get('G') }},
+                    H={{ params.get('H') }},
+                    I={{ params.get('I') }},
+                    J={{ params.get('J') }},
+                    k={{ params.get('k') }},
+                    L={{ params.get('L') }},
+                    M={{ params.get('M') }},
+                    S={{ params.get('S') }}
+                </p>
+
                 <h3>Download Results</h3>
 
                 <a class="download-button" href="/download/{{ result_id }}/txt">Download TXT</a>
                 <a class="download-button" href="/download/{{ result_id }}/csv">Download CSV</a>
                 <a class="download-button" href="/download/{{ result_id }}/json">Download JSON</a>
 
-                <h3>Sum Coefficients</h3>
-                <p>{{ sum_coeffs }}</p>
+                {% for res in all_results %}
 
-                <h3>Product Coefficients</h3>
-                <p>{{ prod_coeffs }}</p>
+                <h3>D = {{ res.D }}, E = {{ res.E }}</h3>
 
-                <h3>Periodicity</h3>
-                <p>
-                    {% if period %}
-                        Period = {{ period }}
+                <p><b>Sum Coefficients</b><br>{{ res.sum }}</p>
+
+                <p><b>Product Coefficients</b><br>{{ res.prod }}</p>
+
+                <p><b>Periodicity</b><br>
+                    {% if res.period %}
+                        Period = {{ res.period }}
                     {% else %}
                         No periodicity detected
                     {% endif %}
                 </p>
-                <br>
+
+                <hr>
+
+                {% endfor %}
             </div>
             {% endif %}
 

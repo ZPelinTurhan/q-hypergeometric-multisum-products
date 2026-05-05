@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, send_file
 
-from product_coefficients_with_periodicity import (
-    compute_two_variable_q_series,
+from three_variables_mass_uniques import (
+    compute_three_variable_q_series,
     sum_to_product,
     test_periodicity
 )
@@ -23,7 +23,6 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 
 # how long to keep result files before cleanup (seconds)
 RESULT_TTL = 3600
-
 def cleanup_old_files():
     # remove result files older than RESULT_TTL
     while True:
@@ -48,9 +47,7 @@ threading.Thread(target=cleanup_old_files, daemon=True).start()
 @app.route('/', methods=["GET", "POST"])
 def index():
 
-    sum_coeffs = None
-    prod_coeffs = None
-    period = None
+    all_results = None
     result_id = None
     error = None
 
@@ -60,21 +57,68 @@ def index():
             A = int(request.form["A"])
             B = int(request.form["B"])
             C = int(request.form["C"])
-            D = int(request.form["D"])
-            E = int(request.form["E"])
+
+            D_min = int(request.form["D_min"])
+            E_min = int(request.form["E_min"])
+
+            D_max_raw = request.form.get("D_max")
+            E_max_raw = request.form.get("E_max")
+
+            if D_max_raw:
+                D_max = int(D_max_raw)
+            else:
+                D_max = D_min
+
+            if E_max_raw:
+                E_max = int(E_max_raw)
+            else:
+                E_max = E_min
+
             F = int(request.form["F"])
+            G = int(request.form["G"])
+            H = int(request.form["H"])
+            I = int(request.form["I"])
+            J = int(request.form["J"])
             k = int(request.form["k"])
             L = int(request.form["L"])
+            M = int(request.form["M"])
             S = int(request.form["S"])
 
         except (KeyError, ValueError):
             # handle missing or invalid input
-            error = "All parameters must be valid integers."
+            error = "Invalid input: all parameters must be valid integers. Please check that every field contains a number."
             return render_template("index.html", error=error)
 
-        sum_coeffs = compute_two_variable_q_series(A, B, C, D, E, F, k, L, S)
-        prod_coeffs = sum_to_product(sum_coeffs, S)
-        period = test_periodicity(prod_coeffs)
+        if D_min > D_max:
+            error = f"Invalid input: D_min ({D_min}) is greater than D_max ({D_max}). Please ensure that the minimum value is less than or equal to the maximum value."
+            return render_template("index.html", error=error)
+
+        if E_min > E_max:
+            error = f"Invalid input: E_min ({E_min}) is greater than E_max ({E_max}). Please ensure that the minimum value is less than or equal to the maximum value."
+            return render_template("index.html", error=error)
+
+        all_results = []
+
+        for D in range(D_min, D_max + 1):
+            for E in range(E_min, E_max + 1):
+
+                params = (A, B, C, D, E, F, G, H, I, J, k, L, M)
+
+                sum_coeffs = compute_three_variable_q_series(params, S)
+
+                if sum_coeffs == "ERROR":
+                    continue
+
+                prod_coeffs = sum_to_product(sum_coeffs, S)
+                period = test_periodicity(prod_coeffs)
+
+                all_results.append({
+                    "D": D,
+                    "E": E,
+                    "sum": sum_coeffs,
+                    "prod": prod_coeffs,
+                    "period": period
+                })
 
         # generate unique id for result
         result_id = str(uuid.uuid4())
@@ -84,16 +128,15 @@ def index():
         # txt
         with open(f"{base}.txt", "w") as f:
             f.write("Parameters\n")
-            f.write(f"A={A}, B={B}, C={C}, D={D}, E={E}, F={F}, k={k}, L={L}, S={S}\n\n")
+            f.write(f"A={A}, B={B}, C={C}, D_range=[{D_min},{D_max}], E_range=[{E_min},{E_max}], F={F}, G={G}, H={H}, I={I}, J={J}, k={k}, L={L}, M={M}, S={S}\n\n")
 
-            f.write("Sum Coefficients\n")
-            f.write(str(sum_coeffs) + "\n\n")
+            f.write("Results\n\n")
 
-            f.write("Product Coefficients\n")
-            f.write(str(prod_coeffs) + "\n\n")
-
-            f.write("Periodicity\n")
-            f.write(f"Period = {period}\n" if period else "No periodicity detected\n")
+            for res in all_results:
+                f.write(f"D={res['D']}, E={res['E']}\n")
+                f.write(f"Sum: {res['sum']}\n")
+                f.write(f"Product: {res['prod']}\n")
+                f.write(f"Period: {res['period']}\n\n")
 
         #csv
         with open(f"{base}.csv", "w", newline="") as csvfile:
@@ -101,42 +144,52 @@ def index():
             writer.writerow(["sep=;"])
 
             writer.writerow(["Parameter", "Value"])
-            for name, val in zip("ABCDEF", [A, B, C, D, E, F]):
-                writer.writerow([name, val])
-
+            writer.writerow(["A", A])
+            writer.writerow(["B", B])
+            writer.writerow(["C", C])
+            writer.writerow(["D_min", D_min])
+            writer.writerow(["D_max", D_max])
+            writer.writerow(["E_min", E_min])
+            writer.writerow(["E_max", E_max])
+            writer.writerow(["F", F])
+            writer.writerow(["G", G])
+            writer.writerow(["H", H])
+            writer.writerow(["I", I])
+            writer.writerow(["J", J])
             writer.writerow(["k", k])
             writer.writerow(["L", L])
+            writer.writerow(["M", M])
             writer.writerow(["S", S])
 
             writer.writerow([])
-            writer.writerow(["Index", "Sum_Coeff", "Product_Coeff"])
+            writer.writerow(["D", "E", "Index", "Sum_Coeff", "Product_Coeff"])
 
-            for i, (sc, pc) in enumerate(zip(sum_coeffs, prod_coeffs)):
-                writer.writerow([i, sc, pc])
+            for res in all_results:
+                D = res["D"]
+                E = res["E"]
 
-            writer.writerow([])
-            writer.writerow(["Periodicity", period if period else "None"])
-        
+                for i, (sc, pc) in enumerate(zip(res["sum"], res["prod"])):
+                    writer.writerow([D, E, i, sc, pc])
 
         # json
         with open(f"{base}.json", "w") as f:
             json.dump({
                 "parameters": {
-                    "A": A, "B": B, "C": C, "D": D,
-                    "E": E, "F": F, "k": k, "L": L, "S": S
+                    "A": A, "B": B, "C": C,
+                    "D_range": [D_min, D_max],
+                    "E_range": [E_min, E_max],
+                    "F": F, "G": G, "H": H, "I": I, "J": J,
+                    "k": k, "L": L, "M": M, "S": S
                 },
-                "sum_coeffs": sum_coeffs,
-                "prod_coeffs": prod_coeffs,
-                "period": period
+                "results": all_results
             }, f, indent=4)
 
     return render_template(
         "index.html",
-        sum_coeffs=sum_coeffs,
-        prod_coeffs=prod_coeffs,
-        period=period,
+        all_results=all_results,
         result_id=result_id,
-        error=error
+        error=error,
+        params=request.form
     )
 
 
