@@ -45,7 +45,7 @@
             }
 
             .compute-button {
-                margin-left: 300px;
+                margin-left: 175px;
             }
 
             .container {
@@ -110,16 +110,18 @@
                         <label>A =</label> <input type="number" name="A" required>
                         <label>B =</label> <input type="number" name="B" required>
                         <label>C =</label> <input type="number" name="C" required>
-                        <label>D_min =</label> <input type="number" name="D_min" required>
-                        <label>D_max (optional) =</label> <input type="number" name="D_max">
-                        <label>E_min =</label> <input type="number" name="E_min" required>
-                        <label>E_max (optional) =</label> <input type="number" name="E_max">
+                        <label>D =</label> <input type="number" name="D" required>
+                        <label>E =</label> <input type="number" name="E" required>
                         <label>F =</label> <input type="number" name="F" required>
+
+                        <label>G_min =</label> <input type="number" name="G_min" required>
+                        <label>G_max =</label> <input type="number" name="G_max">
                     </div>
                     <div class="param-col">
-                        <label>G =</label> <input type="number" name="G" required>
-                        <label>H =</label> <input type="number" name="H" required>
-                        <label>I =</label> <input type="number" name="I" required>
+                        <label>H_min =</label> <input type="number" name="H_min" required>
+                        <label>H_max =</label> <input type="number" name="H_max">
+                        <label>I_min =</label> <input type="number" name="I_min" required>
+                        <label>I_max =</label> <input type="number" name="I_max">
                         <label>J =</label> <input type="number" name="J" required>
                         <label>k =</label> <input type="number" name="k" required>
                         <label>L =</label> <input type="number" name="L" required>
@@ -139,12 +141,12 @@
                     A={{ params.get('A') }},
                     B={{ params.get('B') }},
                     C={{ params.get('C') }},
-                    D_range=[{{ params.get('D_min') }}, {{ params.get('D_max') or params.get('D_min') }}],
-                    E_range=[{{ params.get('E_min') }}, {{ params.get('E_max') or params.get('E_min') }}],
+                    D={{ params.get('D') }},
+                    E={{ params.get('E') }},
                     F={{ params.get('F') }},
-                    G={{ params.get('G') }},
-                    H={{ params.get('H') }},
-                    I={{ params.get('I') }},
+                    G_range=[{{ params.get('G_min') }}, {{ params.get('G_max') or params.get('G_min') }}],
+                    H_range=[{{ params.get('H_min') }}, {{ params.get('H_max') or params.get('H_min') }}],
+                    I_range=[{{ params.get('I_min') }}, {{ params.get('I_max') or params.get('I_min') }}],
                     J={{ params.get('J') }},
                     k={{ params.get('k') }},
                     L={{ params.get('L') }},
@@ -160,7 +162,7 @@
 
                 {% for res in all_results %}
 
-                <h3>D = {{ res.D }}, E = {{ res.E }}</h3>
+                <h3>G = {{ res.G }}, H = {{ res.H }}, I = {{ res.I }}</h3>
 
                 <p><b>Sum Coefficients</b><br>{{ res.sum }}</p>
 
