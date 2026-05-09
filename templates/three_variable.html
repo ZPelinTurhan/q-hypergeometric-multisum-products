@@ -38,16 +38,6 @@
                 font-size: 14px;
             }
 
-            button {
-                margin-top: 20px;
-                padding: 6px 20px;
-                font-size: 16px;
-            }
-
-            .compute-button {
-                margin-left: 175px;
-            }
-
             .container {
                 display: flex;
                 gap: 60px;
@@ -77,10 +67,36 @@
             .download-button:hover {
                 background-color: #d0d0d0;
             }
+
+            .back-button {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                width: 45px;
+                height: 45px;
+                border-radius: 50%;
+                background-color: #e0e0e0;
+                border: 1px solid black;
+                text-decoration: none;
+                color: black;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                cursor: pointer;
+            }
+
+            .back-button:hover {
+                background-color: #d0d0d0;
+            }
         </style>
     </head>
 
     <body style="background-color: rgb(213, 216, 219);">
+
+        <a class="back-button" href="/">
+            ←
+        </a>
 
         <h1 style="
             margin:40px 0;
@@ -130,7 +146,7 @@
                     </div>
                 </div>
 
-                <button class="compute-button" type="submit">Compute</button>
+                <button type="submit" style="display: block; margin-top: 20px; margin-left: 230px;">Compute</button>
             </form>
 
             {% if all_results %}
@@ -156,9 +172,9 @@
 
                 <h3>Download Results</h3>
 
-                <a class="download-button" href="/download/{{ result_id }}/txt">Download TXT</a>
-                <a class="download-button" href="/download/{{ result_id }}/csv">Download CSV</a>
-                <a class="download-button" href="/download/{{ result_id }}/json">Download JSON</a>
+                <a class="download-button" href="/download/three-variable/{{ result_id }}/txt">Download TXT</a>
+                <a class="download-button" href="/download/three-variable/{{ result_id }}/csv">Download CSV</a>
+                <a class="download-button" href="/download/three-variable/{{ result_id }}/json">Download JSON</a>
 
                 {% for res in all_results %}
 
